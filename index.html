@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>TassieWalks – Dog-Friendly Walks</title>
+  <meta name="description" content="Dog-friendly walks around Scottsdale, Beaumaris, Arthur River and Strahan, Tasmania – on a map, driven by an editable CSV.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app" id="app" data-view="map">
+    <aside class="panel" id="panel">
+      <header class="panel-head">
+        <div class="brand">
+          <span class="paw" aria-hidden="true">🐾</span>
+          <div>
+            <h1>TassieWalks</h1>
+            <p class="sub">Dog-friendly walks · Devonport → Scottsdale → Beaumaris → Arthur River → Strahan</p>
+          </div>
+        </div>
+
+        <div class="search">
+          <input id="q" type="search" placeholder="Search walks, features, notes…" autocomplete="off">
+          <button id="nearMe" class="btn ghost" title="Sort by distance from me">📍 Near me</button>
+        </div>
+
+        <div class="filters">
+          <div class="chip-row" id="baseChips" aria-label="Filter by base"></div>
+          <div class="chip-row" id="ruleChips" aria-label="Filter by dog rule"></div>
+        </div>
+      </header>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" class="tab active" data-tab="walks">Walks <span id="count" class="pill">0</span></button>
+        <button role="tab" class="tab" data-tab="route">Route</button>
+        <button role="tab" class="tab" data-tab="data">Data</button>
+      </div>
+
+      <section class="tab-body active" id="tab-walks">
+        <ul class="list" id="list"></ul>
+      </section>
+
+      <section class="tab-body" id="tab-route">
+        <div id="routeInfo"></div>
+      </section>
+
+      <section class="tab-body" id="tab-data">
+        <div class="data-box">
+          <p>The map is driven by two CSV files. Edit <code>data/walks.csv</code> and <code>data/route.csv</code> in the repo, or try changes here first.</p>
+          <div class="btn-row">
+            <label class="btn">Load walks CSV<input type="file" id="fileWalks" accept=".csv,text/csv" hidden></label>
+            <label class="btn">Load route CSV<input type="file" id="fileRoute" accept=".csv,text/csv" hidden></label>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost" id="dlWalks">⬇ Download walks.csv</button>
+            <button class="btn ghost" id="dlRoute">⬇ Download route.csv</button>
+          </div>
+          <p class="hint">Tip: drag a CSV onto the map to load it. Right-click (or long-press) the map to get coordinates for a new row.</p>
+          <p class="hint">Columns: <code>id, base, name, type, length_time, difficulty, dog_rule, features, dist_from_base_km, detour_km, notes, lat, lng, source</code>. <code>dog_rule</code> is one of <b>Off lead</b>, <b>On lead</b>, <b>Check</b>, <b>No dogs</b>.</p>
+          <p class="hint" id="engineInfo"></p>
+        </div>
+      </section>
+
+      <footer class="panel-foot">
+        <div class="legend" id="legend"></div>
+        <p class="disclaimer">Dogs are not allowed in Tasmanian National Parks or State Reserves. Rules change seasonally – always follow signs on the day. Coordinates are approximate.</p>
+      </footer>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map" aria-label="Map"></div>
+      <div id="toast" class="toast" role="status" hidden></div>
+      <div id="drop" class="drop" hidden>Drop CSV to load</div>
+    </main>
+
+    <nav class="mobile-toggle">
+      <button data-view="map" class="active">Map</button>
+      <button data-view="list">List</button>
+    </nav>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
