@@ -11,7 +11,7 @@ Everything on the map comes from two CSV files you can edit. The map uses
 
 - Coloured pins for each walk: 🟢 off lead · 🔵 on lead · 🟠 check signage · 🔴 no dogs (places to skip)
 - Filter by area and by dog rule, and search on any text
-- Click a pin or a list row to see length, difficulty, distance from the town, detour off the route, features, notes, and links for **Directions**, **Google Maps** and the **Source**
+- Click a pin or a list row to see length, difficulty, distance from the town, detour off the route, features, notes, and links for **Directions**, **Google Maps**, **AllTrails** and the **Source**
 - **Route tab** lists each driving leg and the trip total from `route.csv`. With a Google key it also shows Google's live driving distances and draws the road route. It has a one-click **Open whole trip in Google Maps** link.
 - **📍 Near me** sorts the walks by how far they are from you (handy on your phone during the trip)
 - **Mobile layout** with a Map / List toggle
@@ -32,6 +32,7 @@ Everything on the map comes from two CSV files you can edit. The map uses
 | `dist_from_base_km`, `detour_km` | numbers, can be left blank |
 | `lat`, `lng` | required, as decimal degrees (right-click the map to get them) |
 | `source` | a URL |
+| `alltrails_url` | the walk's AllTrails page (optional; if left blank, the pop-up shows a “Find on AllTrails” search link instead) |
 
 ### `data/route.csv`
 

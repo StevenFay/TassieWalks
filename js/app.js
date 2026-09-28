@@ -64,6 +64,9 @@
   }
 
   const gmapsDir = (lat, lng) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  // Exact AllTrails page from the CSV, else a site search for the walk name.
+  const allTrailsUrl = (w) => w.alltrails ||
+    `https://www.google.com/search?q=${encodeURIComponent(`site:alltrails.com ${w.name.replace(/\s*\(.*?\)\s*/g, " ").trim()} Tasmania`)}`;
   const gmapsPlace = (lat, lng) => `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
   // ───────────────────────── CSV ─────────────────────────
@@ -103,6 +106,7 @@
         notes: row.notes || "",
         lat, lng,
         source: safeUrl(row.source),
+        alltrails: safeUrl(row.alltrails_url || row.alltrails),
       });
     });
     state.walks = walks;
@@ -287,6 +291,7 @@
       <div class="links">
         <a href="${gmapsDir(w.lat, w.lng)}" target="_blank" rel="noopener">Directions ↗</a>
         <a href="${gmapsPlace(w.lat, w.lng)}" target="_blank" rel="noopener">Google Maps ↗</a>
+        <a href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>
         ${w.source ? `<a href="${esc(w.source)}" target="_blank" rel="noopener">Source ↗</a>` : ""}
       </div>
     </div>`;
