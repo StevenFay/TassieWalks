@@ -9,7 +9,7 @@ Everything on the map comes from two CSV files you can edit. The map uses
 
 ## Features
 
-- Coloured pins for each walk: 🟢 off lead · 🟣 dog park · 🔵 on lead · 🟠 check signage · 🔴 no dogs (places to skip)
+- Coloured pins for each walk: 🟢 off lead · 🟣 dog park · 🟤 historic pub · 🔵 on lead · 🟠 check signage · 🔴 no dogs (places to skip)
 - Filter by area and by dog rule, and search on any text
 - Click a pin or a list row to see length, difficulty, distance from the town, detour off the route, features, notes, and links for **Directions**, **Google Maps**, **AllTrails** and the **Source**
 - **Route tab** lists each driving leg and the trip total from `route.csv`. It draws the real road route with live driving distances: from Google when a key is set, otherwise from the free OpenStreetMap router (OSRM). It has a one-click **Open whole trip in Google Maps** link.
@@ -40,7 +40,7 @@ that AllTrails tags as dog-friendly. They have `origin = alltrails`. Use the
 | `base` | the group the walk belongs to, e.g. `Scottsdale`, `Beaumaris → Arthur River`. Groups show in the order they first appear. |
 | `name` | required |
 | `type`, `length_time`, `difficulty` | free text |
-| `dog_rule` | `Off lead`, `Dog park`, `On lead`, `Check` or `No dogs` |
+| `dog_rule` | `Off lead`, `Dog park`, `Pub`, `On lead`, `Check` or `No dogs` |
 | `features`, `notes` | free text (notes show as a highlighted warning) |
 | `dist_from_base_km`, `detour_km` | numbers, can be left blank |
 | `lat`, `lng` | required, as decimal degrees (right-click the map to get them) |
