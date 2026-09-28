@@ -118,3 +118,5 @@ h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
 .stop-pin { width: 24px; height: 24px; border-radius: 50%; background: #1f2a26; color: #fff; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); display: grid; place-items: center; font: 700 12px/1 system-ui, Arial, sans-serif; }
 .stop-pin.mini { width: 16px; height: 16px; font-size: 9px; border-width: 1.5px; display: inline-grid; }
 .me-dot { width: 16px; height: 16px; border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(26,115,232,.25); }
+.at-link { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.at-link:hover { text-decoration: underline; }

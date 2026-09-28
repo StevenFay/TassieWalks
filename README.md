@@ -12,7 +12,7 @@ Everything on the map comes from two CSV files you can edit. The map uses
 - Coloured pins for each walk: 🟢 off lead · 🔵 on lead · 🟠 check signage · 🔴 no dogs (places to skip)
 - Filter by area and by dog rule, and search on any text
 - Click a pin or a list row to see length, difficulty, distance from the town, detour off the route, features, notes, and links for **Directions**, **Google Maps**, **AllTrails** and the **Source**
-- **Route tab** lists each driving leg and the trip total from `route.csv`. With a Google key it also shows Google's live driving distances and draws the road route. It has a one-click **Open whole trip in Google Maps** link.
+- **Route tab** lists each driving leg and the trip total from `route.csv`. It draws the real road route with live driving distances: from Google when a key is set, otherwise from the free OpenStreetMap router (OSRM). It has a one-click **Open whole trip in Google Maps** link.
 - **📍 Near me** sorts the walks by how far they are from you (handy on your phone during the trip)
 - **Mobile layout** with a Map / List toggle
 - **Try edits in the browser:** load a CSV from the Data tab or drag one onto the map. Download the current CSVs. Right-click (or long-press) the map to copy `lat,lng` for a new row.
@@ -55,7 +55,7 @@ After that, edits in the Sheet show up on the map the next time the page is load
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable:
    - **Maps JavaScript API** (required)
-   - **Directions API** (optional; needed for the live road route and distances)
+   - **Directions API** (optional; without it the road route comes from OpenStreetMap instead)
 2. Go to **Credentials → Create credentials → API key**, and restrict it:
    - Application restriction: **Websites**, e.g. `https://stevenfay.github.io/*` and `http://localhost:8000/*`
    - API restriction: Maps JavaScript API (+ Directions API)
@@ -68,8 +68,9 @@ Google's free monthly credit.
 
 If the key is missing, rejected or blocked, the app shows a message and
 switches to OpenStreetMap. Newer Google Cloud projects can't enable the
-legacy Directions API. In that case the route is drawn as straight dashed
-lines between the stops, using the distances in `route.csv`.
+legacy Directions API. In that case the road route comes from the free
+OpenStreetMap router instead. Straight dashed lines only appear if no
+routing service can be reached.
 
 ## Run locally
 

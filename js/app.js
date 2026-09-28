@@ -131,6 +131,37 @@
     state.rawRoute = rows; state.routeFields = fields;
   }
 
+  // ───────────────────────── Road routing (OpenStreetMap / OSRM) ─────────────────────────
+  // Used when Google Directions isn't available (no key, or legacy API not enabled).
+  // Free public OSRM servers, called from the visitor's browser; the result is cached per browser.
+  const OSRM_SERVERS = [
+    "https://router.project-osrm.org/route/v1/driving/",
+    "https://routing.openstreetmap.de/routed-car/route/v1/driving/",
+  ];
+  async function roadRoute(stops) {
+    const coords = stops.map((s) => `${s.lng.toFixed(5)},${s.lat.toFixed(5)}`).join(";");
+    const cacheKey = "tassiewalks:osrm:" + coords;
+    try { const c = localStorage.getItem(cacheKey); if (c) return JSON.parse(c); } catch (_) {}
+    for (const base of OSRM_SERVERS) {
+      try {
+        const r = await fetch(`${base}${coords}?overview=full&geometries=geojson&continue_straight=false`);
+        if (!r.ok) throw new Error(r.status);
+        const j = await r.json();
+        const rt = j.routes?.[0];
+        if (j.code !== "Ok" || !rt) throw new Error(j.code || "no route");
+        const out = {
+          path: rt.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })),
+          legs: rt.legs.map((l) => ({ km: l.distance / 1000, hrs: l.duration / 3600 })),
+          source: "OpenStreetMap",
+        };
+        try { localStorage.setItem(cacheKey, JSON.stringify(out)); } catch (_) {}
+        return out;
+      } catch (e) { console.warn("Routing server failed:", base, e); }
+    }
+    return null;
+  }
+  let routeSeq = 0;
+
   // ───────────────────────── Google engine ─────────────────────────
   function loadGoogleBootstrap(key) {
     // Official dynamic library import bootstrap (developers.google.com/maps/documentation/javascript/load-maps-js-api)
@@ -184,6 +215,7 @@
       async drawRoute(stops) {
         this.clearRoute();
         if (stops.length < 2) return null;
+        const seq = ++routeSeq;
         stops.forEach((s, i) => {
           const m = new AdvancedMarkerElement({ map, position: { lat: s.lat, lng: s.lng }, title: s.name, content: divEl("stop-pin", String(i + 1)), zIndex: 5 });
           m.addListener("click", () => { iw.setContent(stopHtml(s, i)); iw.setPosition({ lat: s.lat, lng: s.lng }); iw.setOptions({ pixelOffset: new google.maps.Size(0, -14) }); iw.open({ map }); });
@@ -197,12 +229,20 @@
               waypoints: stops.slice(1, -1).map((s) => ({ location: { lat: s.lat, lng: s.lng }, stopover: true })),
               travelMode: google.maps.TravelMode.DRIVING,
             });
+            if (seq !== routeSeq) return undefined; // superseded by a newer draw
             const dr = new DirectionsRenderer({ map, directions: res, suppressMarkers: true, preserveViewport: true, polylineOptions: { strokeColor: "#2f5d50", strokeOpacity: 0.75, strokeWeight: 5 } });
             routeObjs.push({ remove: () => dr.setMap(null) });
-            return res.routes[0].legs.map((l) => ({ km: l.distance.value / 1000, hrs: l.duration.value / 3600 }));
+            return { legs: res.routes[0].legs.map((l) => ({ km: l.distance.value / 1000, hrs: l.duration.value / 3600 })), source: "Google" };
           } catch (e) {
-            console.warn("Directions unavailable, drawing straight lines instead:", e);
+            console.warn("Google Directions unavailable, trying OpenStreetMap routing:", e);
           }
+        }
+        const rr = await roadRoute(stops);
+        if (seq !== routeSeq) return undefined; // superseded by a newer draw
+        if (rr) {
+          const road = new Polyline({ map, path: rr.path, strokeColor: "#2f5d50", strokeOpacity: 0.75, strokeWeight: 5 });
+          routeObjs.push({ remove: () => road.setMap(null) });
+          return rr;
         }
         const line = new Polyline({
           map, path: stops.map((s) => ({ lat: s.lat, lng: s.lng })), strokeOpacity: 0,
@@ -256,11 +296,18 @@
       async drawRoute(stops) {
         routeLayer.clearLayers();
         if (stops.length < 2) return null;
-        L.polyline(stops.map((s) => [s.lat, s.lng]), { color: "#2f5d50", weight: 3, opacity: 0.8, dashArray: "6 8" }).addTo(routeLayer);
+        const seq = ++routeSeq;
         stops.forEach((s, i) => {
           L.marker([s.lat, s.lng], { icon: L.divIcon({ className: "", html: `<div class="stop-pin">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] }), zIndexOffset: -100 })
             .bindPopup(stopHtml(s, i)).addTo(routeLayer);
         });
+        const rr = CFG.LIVE_DIRECTIONS ? await roadRoute(stops) : null;
+        if (seq !== routeSeq) return undefined; // superseded by a newer draw
+        if (rr) {
+          L.polyline(rr.path.map((p) => [p.lat, p.lng]), { color: "#2f5d50", weight: 5, opacity: 0.75 }).addTo(routeLayer);
+          return rr;
+        }
+        L.polyline(stops.map((s) => [s.lat, s.lng]), { color: "#2f5d50", weight: 3, opacity: 0.8, dashArray: "6 8" }).addTo(routeLayer);
         return null;
       },
       clearRoute() { routeLayer.clearLayers(); },
@@ -340,7 +387,8 @@
       const bits = [w.length, w.difficulty, w.detour != null ? `detour ${fmtKm(w.detour)}` : "", state.me ? `${fmtKm(haversineKm(state.me, w))} away` : ""].filter(Boolean);
       return `<li class="item${state.selected === w.id ? " sel" : ""}" data-id="${esc(w.id)}" tabindex="0">
         <span class="dot" style="background:${r.color}" title="${esc(r.label)}"></span>
-        <div><h3>${esc(w.name)}</h3><div class="meta">${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div></div></li>`;
+        <div><h3>${esc(w.name)}</h3><div class="meta">${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div>
+        <a class="at-link" href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a></div></li>`;
     };
 
     if (state.me) {
@@ -357,7 +405,8 @@
   function renderRoute() {
     const s = state.route;
     if (s.length < 2) { $("#routeInfo").innerHTML = `<div class="route-box"><p class="hint">Add at least two stops to data/route.csv.</p></div>`; return; }
-    const live = state.liveLegs;
+    const liveSrc = state.liveLegs?.source;
+    const live = state.liveLegs?.legs;
     let totKm = 0, totHrs = 0, totLive = 0, totLiveH = 0;
     const rows = s.slice(1).map((stop, i) => {
       totKm += stop.km || 0; totHrs += stop.hrs || 0;
@@ -371,7 +420,7 @@
       (pts.length > 2 ? `&waypoints=${encodeURIComponent(pts.slice(1, -1).join("|"))}` : "");
     $("#routeInfo").innerHTML = `<div class="route-box">
       <table class="legs">
-        <thead><tr><th>Leg</th><th class="num">Plan (CSV)</th>${live ? `<th class="num">Google live</th>` : ""}</tr></thead>
+        <thead><tr><th>Leg</th><th class="num">Plan (CSV)</th>${live ? `<th class="num">Road (${esc(liveSrc)})</th>` : ""}</tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr><td>Total</td><td class="num">${fmtKm(totKm)}<div class="note">${fmtHrs(totHrs)}</div></td>${live ? `<td class="num live">${fmtKm(totLive)}<div class="note">${fmtHrs(totLiveH)}</div></td>` : ""}</tr></tfoot>
       </table>
@@ -379,16 +428,19 @@
         <a class="btn" href="${tripUrl}" target="_blank" rel="noopener">Open whole trip in Google Maps ↗</a>
         <label class="btn ghost"><input type="checkbox" id="showRoute" ${state.showRoute ? "checked" : ""}> Show route</label>
       </div>
-      <p class="hint">${live ? "“Google live” is the driving route Google picked just now; it may differ from the plan (e.g. sealed road vs the Western Explorer)." : "Distances come from route.csv. Add a Google Maps key in js/config.js for live driving distances."}</p>
+      <p class="hint">${live ? `The solid line and “Road” column follow real roads, routed by ${esc(liveSrc)}. The router picks its own fastest way, which may differ from the plan (e.g. sealed highway vs the Western Explorer).` : "Couldn't reach a routing service, so the dashed line joins the stops directly. Distances come from route.csv."}</p>
     </div>`;
     $("#showRoute").addEventListener("change", (e) => { state.showRoute = e.target.checked; drawRoute(); });
   }
 
   async function drawRoute() {
     const eng = state.engine;
-    if (!state.showRoute) { eng.clearRoute(); state.liveLegs = null; renderRoute(); return; }
-    state.liveLegs = await eng.drawRoute(state.route);
-    if (eng === state.engine) renderRoute();
+    if (!state.showRoute) { routeSeq++; eng.clearRoute(); state.liveLegs = null; renderRoute(); return; }
+    const res = await eng.drawRoute(state.route);
+    if (eng !== state.engine) return;
+    if (res === undefined) return; // a newer draw is in progress
+    state.liveLegs = res;
+    renderRoute();
   }
 
   function select(id, { fromMap = false } = {}) {
@@ -516,7 +568,7 @@
       renderChips(); renderList();
     });
 
-    $("#list").addEventListener("click", (e) => { const li = e.target.closest(".item"); if (li) select(li.dataset.id); });
+    $("#list").addEventListener("click", (e) => { if (e.target.closest("a")) return; const li = e.target.closest(".item"); if (li) select(li.dataset.id); });
     $("#list").addEventListener("keydown", (e) => { if (e.key === "Enter") { const li = e.target.closest(".item"); if (li) select(li.dataset.id); } });
 
     $$(".tab").forEach((t) => t.addEventListener("click", () => {

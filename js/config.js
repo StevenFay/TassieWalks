@@ -24,7 +24,8 @@ window.TASSIE_CONFIG = {
   WALKS_CSV: "data/walks.csv",
   ROUTE_CSV: "data/route.csv",
 
-  // Ask Google for a live driving route through the stops.
-  // Falls back to straight lines + CSV distances if unavailable.
+  // Draw the real driving route through the stops. Uses Google Directions
+  // when a key is set (and the Directions API is enabled), otherwise the free
+  // OpenStreetMap router (OSRM). Straight dashed lines only if both fail.
   LIVE_DIRECTIONS: true,
 };
