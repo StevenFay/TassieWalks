@@ -25,7 +25,7 @@
   const state = {
     walks: [], route: [],
     rawWalks: null, walksFields: null, rawRoute: null, routeFields: null,
-    bases: [], baseFilter: new Set(), ruleFilter: new Set(), q: "",
+    bases: [], baseFilter: new Set(), ruleFilter: new Set(), originFilter: new Set(), maxDist: Infinity, q: "",
     me: null, selected: null, engine: null, handles: new Map(),
     liveLegs: null, showRoute: true,
   };
@@ -107,6 +107,8 @@
         lat, lng,
         source: safeUrl(row.source),
         alltrails: safeUrl(row.alltrails_url || row.alltrails),
+        origin: /alltrails/i.test(row.origin || "") ? "alltrails" : "curated",
+        rating: num(row.rating),
       });
     });
     state.walks = walks;
@@ -324,7 +326,7 @@
   function infoHtml(w) {
     const r = RULES[w.rule];
     const rows = [
-      ["Length", w.length], ["Difficulty", w.difficulty],
+      ["Length", w.length], ["Difficulty", w.difficulty], ["AllTrails", w.rating ? `★ ${w.rating}` : ""],
       ["From " + w.base.split(" →")[0], w.distBase != null ? fmtKm(w.distBase) : ""],
       ["Detour", w.detour != null ? `${fmtKm(w.detour)} return` : ""],
       ["From you", state.me ? `${fmtKm(haversineKm(state.me, w))} (straight line)` : ""],
@@ -361,6 +363,12 @@
       .filter(([k]) => counts[k])
       .map(([k, r]) => `<button class="chip" data-rule="${esc(k)}" aria-pressed="${state.ruleFilter.has(k)}"><span class="dot" style="background:${r.color}"></span>${esc(r.label)} <span class="pill">${counts[k]}</span></button>`)
       .join("");
+    const oc = { curated: 0, alltrails: 0 };
+    state.walks.forEach((w) => oc[w.origin]++);
+    $("#originChips").innerHTML = oc.alltrails
+      ? [["curated", "Researched list"], ["alltrails", "AllTrails trails"]]
+          .map(([k, l]) => `<button class="chip" data-origin="${k}" aria-pressed="${state.originFilter.has(k)}">${l} <span class="pill">${oc[k]}</span></button>`).join("")
+      : "";
     $("#legend").innerHTML = Object.values(RULES).map((r) => `<span><span class="dot" style="background:${r.color}"></span>${esc(r.label)}</span>`).join("") +
       `<span><span class="stop-pin mini">1</span>Trip stop</span>`;
   }
@@ -368,6 +376,8 @@
   function isVisible(w) {
     if (state.baseFilter.size && !state.baseFilter.has(w.base)) return false;
     if (state.ruleFilter.size && !state.ruleFilter.has(w.rule)) return false;
+    if (state.originFilter.size && !state.originFilter.has(w.origin)) return false;
+    if (Number.isFinite(state.maxDist) && w.distBase != null && w.distBase > state.maxDist) return false;
     if (state.q) {
       const hay = `${w.name} ${w.base} ${w.type} ${w.features} ${w.notes} ${w.difficulty} ${w.ruleRaw}`.toLowerCase();
       if (!state.q.split(/\s+/).every((t) => hay.includes(t))) return false;
@@ -384,7 +394,10 @@
 
     const item = (w) => {
       const r = RULES[w.rule];
-      const bits = [w.length, w.difficulty, w.detour != null ? `detour ${fmtKm(w.detour)}` : "", state.me ? `${fmtKm(haversineKm(state.me, w))} away` : ""].filter(Boolean);
+      const bits = [w.rating ? `★ ${w.rating}` : "", w.length, w.difficulty,
+        w.distBase != null && w.distBase > 0 ? `~${fmtKm(w.distBase)} from ${w.base.split(" →")[0]}` : "",
+        w.detour != null && w.detour > 0 ? `detour ${fmtKm(w.detour)}` : "",
+        state.me ? `${fmtKm(haversineKm(state.me, w))} away` : ""].filter(Boolean);
       return `<li class="item${state.selected === w.id ? " sel" : ""}" data-id="${esc(w.id)}" tabindex="0">
         <span class="dot" style="background:${r.color}" title="${esc(r.label)}"></span>
         <div><h3>${esc(w.name)}</h3><div class="meta">${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div>
@@ -566,6 +579,17 @@
       const v = b.dataset.rule;
       state.ruleFilter.has(v) ? state.ruleFilter.delete(v) : state.ruleFilter.add(v);
       renderChips(); renderList();
+    });
+
+    $("#originChips").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-origin]"); if (!b) return;
+      const v = b.dataset.origin;
+      state.originFilter.has(v) ? state.originFilter.delete(v) : state.originFilter.add(v);
+      renderChips(); renderList();
+    });
+    $("#maxDist").addEventListener("change", (e) => {
+      state.maxDist = e.target.value ? Number(e.target.value) : Infinity;
+      renderList(); fitVisible();
     });
 
     $("#list").addEventListener("click", (e) => { if (e.target.closest("a")) return; const li = e.target.closest(".item"); if (li) select(li.dataset.id); });

@@ -17,6 +17,19 @@ Everything on the map comes from two CSV files you can edit. The map uses
 - **Mobile layout** with a Map / List toggle
 - **Try edits in the browser:** load a CSV from the Data tab or drag one onto the map. Download the current CSVs. Right-click (or long-press) the map to copy `lat,lng` for a new row.
 
+## AllTrails trails
+
+163 extra walks were imported from AllTrails: every trail within 300 km of a base town
+that AllTrails tags as dog-friendly. They have `origin = alltrails`. Use the
+“AllTrails trails” chip and the “Within … km of the base town” filter to show them.
+
+- AllTrails doesn't give trailhead coordinates, so each pin was estimated from AllTrails'
+  distance-to-trailhead data (usually within about 1 km, sometimes 2–3 km). Use the
+  AllTrails link for the exact start.
+- AllTrails dog tags are crowd-sourced. Where a trail sits in a State Reserve or National
+  Park, it's marked “Check signage”, because dogs are normally banned there.
+- Dogs “allowed” on AllTrails doesn't mean off-lead, so these are all shown as on-lead.
+
 ## Editing the data
 
 ### `data/walks.csv`
@@ -32,6 +45,8 @@ Everything on the map comes from two CSV files you can edit. The map uses
 | `dist_from_base_km`, `detour_km` | numbers, can be left blank |
 | `lat`, `lng` | required, as decimal degrees (right-click the map to get them) |
 | `source` | a URL |
+| `origin` | `curated` (researched from council / Parks sources) or `alltrails` (imported from AllTrails' dog-friendly tags) |
+| `rating` | AllTrails star rating (optional) |
 | `alltrails_url` | the walk's AllTrails page (optional; if left blank, the pop-up shows a “Find on AllTrails” search link instead) |
 
 ### `data/route.csv`
