@@ -17,6 +17,18 @@ Everything on the map comes from two CSV files you can edit. The map uses
 - **Mobile layout** with a Map / List toggle
 - **Try edits in the browser:** load a CSV from the Data tab or drag one onto the map. Download the current CSVs. Right-click (or long-press) the map to copy `lat,lng` for a new row.
 
+## Categories
+
+| Pin | Category | What it means |
+|---|---|---|
+| 🟢 | Off lead | Council-declared off-lead beaches and areas |
+| 🟣 | Dog park | Fenced or designated dog parks |
+| 🔵 | On lead | Walks where dogs are allowed on a lead |
+| 🔷 | Lake | Dog-friendly lakes, with camping / fires / fishing / dog-swim info and filter chips |
+| 🟤 | Historic pub | Notable or historic pubs – dogs usually only in outdoor areas |
+| 🟠 | Check signage | Conflicting or unconfirmed dog rules |
+| 🔴 | No dogs | Places to skip with a dog |
+
 ## AllTrails trails
 
 163 extra walks were imported from AllTrails: every trail within 300 km of a base town
