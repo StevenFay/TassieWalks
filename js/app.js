@@ -18,6 +18,7 @@
     "Off lead": { color: "#2e8b57", glyph: "✓", label: "Off lead" },
     "Dog park": { color: "#7b4fb3", glyph: "P", label: "Dog park" },
     "Pub": { color: "#9a5b13", glyph: "🍺", label: "Historic pub" },
+    "Lake": { color: "#12869c", glyph: "≈", label: "Lake" },
     "On lead":  { color: "#2f6fb5", glyph: "L", label: "On lead" },
     "Check":    { color: "#d0891a", glyph: "?", label: "Check signage" },
     "No dogs":  { color: "#c0392b", glyph: "✕", label: "No dogs" },
@@ -27,7 +28,7 @@
   const state = {
     walks: [], route: [],
     rawWalks: null, walksFields: null, rawRoute: null, routeFields: null,
-    bases: [], baseFilter: new Set(), ruleFilter: new Set(), originFilter: new Set(), maxDist: Infinity, q: "",
+    bases: [], amenFilter: new Set(), baseFilter: new Set(), ruleFilter: new Set(), originFilter: new Set(), maxDist: Infinity, q: "",
     me: null, selected: null, engine: null, handles: new Map(),
     liveLegs: null, showRoute: true,
   };
@@ -53,6 +54,7 @@
     if (/no\s*dog|prohibit|not allowed|banned/.test(s)) return "No dogs";
     if (/dog\s*park|fenced/.test(s)) return "Dog park";
     if (/\bpub\b|hotel|tavern|inn\b/.test(s)) return "Pub";
+    if (/lake|lagoon/.test(s)) return "Lake";
     if (/off/.test(s)) return "Off lead";
     if (/check|unknown|\?/.test(s)) return "Check";
     if (/lead|leash|on/.test(s)) return "On lead";
@@ -66,6 +68,10 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => (t.hidden = true), ms);
   }
+
+  // Lake amenities: a value counts as "yes" unless blank / No / Check / Unknown.
+  const AMEN = [["camping", "🏕", "Camping"], ["fires", "🔥", "Campfires"], ["fishing", "🎣", "Fishing"], ["dogSwim", "🐕", "Dog swim"]];
+  const isYes = (v) => !!v && !/^(no|check|unknown|\?)/i.test(String(v).trim());
 
   const gmapsDir = (lat, lng) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   // Exact AllTrails page from the CSV, else a site search for the walk name.
@@ -112,6 +118,7 @@
         source: safeUrl(row.source),
         alltrails: safeUrl(row.alltrails_url || row.alltrails),
         origin: /alltrails/i.test(row.origin || "") ? "alltrails" : "curated",
+        camping: row.camping || "", fires: row.fires || "", fishing: row.fishing || "", dogSwim: row.dog_swim || "",
         rating: num(row.rating),
       });
     });
@@ -331,20 +338,21 @@
     const r = RULES[w.rule];
     const rows = [
       ["Length", w.length], ["Difficulty", w.difficulty], ["AllTrails", w.rating ? `★ ${w.rating}` : ""],
+      ...AMEN.map(([k, ic, lab]) => [`${ic} ${lab}`, w[k]]),
       ["From " + w.base.split(" →")[0], w.distBase != null ? fmtKm(w.distBase) : ""],
       ["Detour", w.detour != null ? `${fmtKm(w.detour)} return` : ""],
       ["From you", state.me ? `${fmtKm(haversineKm(state.me, w))} (straight line)` : ""],
     ].filter(([, v]) => v);
     return `<div class="iw">
       <h3>${esc(w.name)}</h3>
-      <span class="tag" style="background:${r.color}">${esc(r.label)}</span><span class="tag plain">${esc(w.base)}</span>${w.type ? `<span class="tag plain">${esc(w.type)}</span>` : ""}
+      <span class="tag" style="background:${r.color}">${esc(r.label)}</span><span class="tag plain">${esc(w.base)}</span>${w.type && w.type !== r.label ? `<span class="tag plain">${esc(w.type)}</span>` : ""}
       ${rows.length ? `<dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}
       ${w.features ? `<p>${esc(w.features)}</p>` : ""}
       ${w.notes ? `<p class="notes">${esc(w.notes)}</p>` : ""}
       <div class="links">
         <a href="${gmapsDir(w.lat, w.lng)}" target="_blank" rel="noopener">Directions ↗</a>
         <a href="${gmapsPlace(w.lat, w.lng)}" target="_blank" rel="noopener">Google Maps ↗</a>
-        ${w.alltrails || !["Dog park", "Pub"].includes(w.rule) ? `<a href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}
+        ${w.alltrails || !["Dog park", "Pub", "Lake"].includes(w.rule) ? `<a href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}
         ${w.source ? `<a href="${esc(w.source)}" target="_blank" rel="noopener">Source ↗</a>` : ""}
       </div>
     </div>`;
@@ -373,6 +381,10 @@
       ? [["curated", "Researched list"], ["alltrails", "AllTrails trails"]]
           .map(([k, l]) => `<button class="chip" data-origin="${k}" aria-pressed="${state.originFilter.has(k)}">${l} <span class="pill">${oc[k]}</span></button>`).join("")
       : "";
+    const hasAmen = state.walks.some((w) => AMEN.some(([k]) => w[k]));
+    $("#amenChips").innerHTML = hasAmen
+      ? AMEN.map(([k, ic, lab]) => `<button class="chip" data-amen="${k}" aria-pressed="${state.amenFilter.has(k)}">${ic} ${lab} <span class="pill">${state.walks.filter((w) => isYes(w[k])).length}</span></button>`).join("")
+      : "";
     $("#legend").innerHTML = Object.values(RULES).map((r) => `<span><span class="dot" style="background:${r.color}"></span>${esc(r.label)}</span>`).join("") +
       `<span><span class="stop-pin mini">1</span>Trip stop</span>`;
   }
@@ -381,6 +393,7 @@
     if (state.baseFilter.size && !state.baseFilter.has(w.base)) return false;
     if (state.ruleFilter.size && !state.ruleFilter.has(w.rule)) return false;
     if (state.originFilter.size && !state.originFilter.has(w.origin)) return false;
+    for (const k of state.amenFilter) if (!isYes(w[k])) return false;
     if (Number.isFinite(state.maxDist) && w.distBase != null && w.distBase > state.maxDist) return false;
     if (state.q) {
       const hay = `${w.name} ${w.base} ${w.type} ${w.features} ${w.notes} ${w.difficulty} ${w.ruleRaw}`.toLowerCase();
@@ -398,14 +411,15 @@
 
     const item = (w) => {
       const r = RULES[w.rule];
+      const amen = AMEN.filter(([k]) => isYes(w[k])).map(([, ic, lab]) => `<span title="${lab}">${ic}</span>`).join("");
       const bits = [w.rating ? `★ ${w.rating}` : "", w.length, w.difficulty,
         w.distBase != null && w.distBase > 0 ? `~${fmtKm(w.distBase)} from ${w.base.split(" →")[0]}` : "",
         w.detour != null && w.detour > 0 ? `detour ${fmtKm(w.detour)}` : "",
         state.me ? `${fmtKm(haversineKm(state.me, w))} away` : ""].filter(Boolean);
       return `<li class="item${state.selected === w.id ? " sel" : ""}" data-id="${esc(w.id)}" tabindex="0">
         <span class="dot" style="background:${r.color}" title="${esc(r.label)}"></span>
-        <div><h3>${esc(w.name)}</h3><div class="meta">${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div>
-        ${w.alltrails || !["Dog park", "Pub"].includes(w.rule) ? `<a class="at-link" href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}</div></li>`;
+        <div><h3>${esc(w.name)}</h3><div class="meta">${amen ? `<span class="amen">${amen}</span>` : ""}${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div>
+        ${w.alltrails || !["Dog park", "Pub", "Lake"].includes(w.rule) ? `<a class="at-link" href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}</div></li>`;
     };
 
     if (state.me) {
@@ -590,6 +604,12 @@
       const v = b.dataset.origin;
       state.originFilter.has(v) ? state.originFilter.delete(v) : state.originFilter.add(v);
       renderChips(); renderList();
+    });
+    $("#amenChips").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-amen]"); if (!b) return;
+      const v = b.dataset.amen;
+      state.amenFilter.has(v) ? state.amenFilter.delete(v) : state.amenFilter.add(v);
+      renderChips(); renderList(); fitVisible();
     });
     $("#maxDist").addEventListener("change", (e) => {
       state.maxDist = e.target.value ? Number(e.target.value) : Infinity;
