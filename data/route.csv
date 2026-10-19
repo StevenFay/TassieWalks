@@ -1,23 +1,19 @@
-trip,order,name,lat,lng,leg_km,leg_hrs,notes
-Day drive: Byron Bay → Gumly Gumly,1,Ingenia Holidays Byron Bay,-28.656,153.611,,,"Start – 5-37 Broken Head Rd, Byron Bay (dogs OK on sites and select cabins)"
-Day drive: Byron Bay → Gumly Gumly,2,Coffs Harbour bypass (M1),-30.3,153.098,217,2.3,M1 Pacific Motorway via Ballina and Grafton
-Day drive: Byron Bay → Gumly Gumly,3,Port Macquarie turnoff (M1),-31.457,152.85,136,1.4,M1 via Nambucca Heads and Kempsey
-Day drive: Byron Bay → Gumly Gumly,4,Hexham (M1),-32.83,151.69,221,2.3,M1 via Taree and Bulahdelah
-Day drive: Byron Bay → Gumly Gumly,5,Prestons – M7/M31 junction (Sydney),-33.945,150.865,181,2.1,"M1 via the Central Coast, M2 and M7 around western Sydney to the M31 Hume"
-Day drive: Byron Bay → Gumly Gumly,6,Goulburn (M31),-34.78,149.69,149,1.5,M31 Hume Motorway via the Southern Highlands
-Day drive: Byron Bay → Gumly Gumly,7,"Sturt Hwy turnoff (M31, south of Gundagai)",-35.137,147.957,226,2.3,M31 Hume Hwy via Yass and Gundagai
-Day drive: Byron Bay → Gumly Gumly,8,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,63,0.7,"A20 Sturt Hwy west from the Hume – 3791 Sturt Hwy, Gumly Gumly"
-Mainland: Byron Bay → Geelong,1,Byron Bay,-28.6474,153.602,,,Start
-Mainland: Byron Bay → Geelong,2,Coffs Harbour,-30.2963,153.1135,245,2.75,M1 Pacific Motorway south via Ballina and Grafton
-Mainland: Byron Bay → Geelong,3,Port Macquarie,-31.4333,152.9,160,1.9,Pacific Hwy via Nambucca and Kempsey; Port Macquarie is ~10 min off the highway
-Mainland: Byron Bay → Geelong,4,Newcastle,-32.9283,151.7817,250,2.8,Pacific Hwy via Taree; Newcastle is ~20 min off the M1 at Hexham
-Mainland: Byron Bay → Geelong,5,Sydney (M7/Hume junction),-33.945,150.865,185,2.2,"M1 via the Central Coast, then M2/M7 around western Sydney to the Hume"
-Mainland: Byron Bay → Geelong,6,Goulburn,-34.7546,149.7186,170,1.8,Hume Hwy via the Southern Highlands
-Mainland: Byron Bay → Geelong,7,Albury,-36.0737,146.9135,385,3.8,"Hume Hwy via Yass, Gundagai and Holbrook"
-Mainland: Byron Bay → Geelong,8,Wangaratta,-36.358,146.312,75,0.8,Hume Fwy into Victoria
-Mainland: Byron Bay → Geelong,9,Geelong (Spirit of Tasmania terminal),-38.107,144.372,310,3.3,"Hume Fwy via Benalla, Euroa and Seymour, M80 ring road, Princes Fwy to Geelong"
-Tasmania,1,Devonport,-41.1786,146.3634,,,Start – Spirit of Tasmania terminal
-Tasmania,2,Scottsdale,-41.159,147.514,159,2.0,"Bass Hwy to Launceston, Tasman Hwy (A3)"
-Tasmania,3,Beaumaris,-41.421,148.282,110,1.75,"Tasman Hwy via Derby, Weldborough Pass, St Helens"
-Tasmania,4,Arthur River,-41.054,144.666,475,6.0,"Back via Launceston, Bass Hwy via Devonport, Burnie, Smithton – consider an overnight stop"
-Tasmania,5,Strahan,-42.153,145.327,220,4.5,"Western Explorer via Corinna + Fatman Barge, then Zeehan (~130 km gravel; no fuel until Zeehan)"
+trip,order,name,lat,lng,leg_km,leg_hrs,notes,via,hour_marks
+Day drive: Byron Bay → Gumly Gumly,1,Ingenia Holidays Byron Bay,-28.656,153.611,,,"Start – 5-37 Broken Head Rd, Byron Bay",,yes
+Day drive: Byron Bay → Gumly Gumly,2,via M1 at Hexham,-32.83,151.69,,,Routing point only – keeps the route on the M1,yes,
+Day drive: Byron Bay → Gumly Gumly,3,"via M7/M31 junction, Prestons",-33.945,150.865,,,Routing point only – onto the M31 Hume,yes,
+Day drive: Byron Bay → Gumly Gumly,4,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,1193,,"M1 Pacific Motorway to Sydney, M7, M31 Hume, A20 Sturt Hwy – 3791 Sturt Hwy, Gumly Gumly",,
+Mainland: Byron Bay → Geelong,1,Byron Bay,-28.6474,153.602,,,Start,,
+Mainland: Byron Bay → Geelong,2,Coffs Harbour,-30.2963,153.1135,245,2.75,M1 Pacific Motorway south via Ballina and Grafton,,
+Mainland: Byron Bay → Geelong,3,Port Macquarie,-31.4333,152.9,160,1.9,Pacific Hwy via Nambucca and Kempsey; Port Macquarie is ~10 min off the highway,,
+Mainland: Byron Bay → Geelong,4,Newcastle,-32.9283,151.7817,250,2.8,Pacific Hwy via Taree; Newcastle is ~20 min off the M1 at Hexham,,
+Mainland: Byron Bay → Geelong,5,Sydney (M7/Hume junction),-33.945,150.865,185,2.2,"M1 via the Central Coast, then M2/M7 around western Sydney to the Hume",,
+Mainland: Byron Bay → Geelong,6,Goulburn,-34.7546,149.7186,170,1.8,Hume Hwy via the Southern Highlands,,
+Mainland: Byron Bay → Geelong,7,Albury,-36.0737,146.9135,385,3.8,"Hume Hwy via Yass, Gundagai and Holbrook",,
+Mainland: Byron Bay → Geelong,8,Wangaratta,-36.358,146.312,75,0.8,Hume Fwy into Victoria,,
+Mainland: Byron Bay → Geelong,9,Geelong (Spirit of Tasmania terminal),-38.107,144.372,310,3.3,"Hume Fwy via Benalla, Euroa and Seymour, M80 ring road, Princes Fwy to Geelong",,
+Tasmania,1,Devonport,-41.1786,146.3634,,,Start – Spirit of Tasmania terminal,,
+Tasmania,2,Scottsdale,-41.159,147.514,159,2.0,"Bass Hwy to Launceston, Tasman Hwy (A3)",,
+Tasmania,3,Beaumaris,-41.421,148.282,110,1.75,"Tasman Hwy via Derby, Weldborough Pass, St Helens",,
+Tasmania,4,Arthur River,-41.054,144.666,475,6.0,"Back via Launceston, Bass Hwy via Devonport, Burnie, Smithton – consider an overnight stop",,
+Tasmania,5,Strahan,-42.153,145.327,220,4.5,"Western Explorer via Corinna + Fatman Barge, then Zeehan (~130 km gravel; no fuel until Zeehan)",,

@@ -66,7 +66,7 @@ that AllTrails tags as dog-friendly. They have `origin = alltrails`. Use the
 
 ### `data/route.csv`
 
-`trip, order, name, lat, lng, leg_km, leg_hrs, notes`. The Route tab can show **1-hour markers** (1h, 2h, …) along each trip, timed from the router’s driving times (or from `leg_hrs` on the straight-line fallback). The leg values are the
+`trip, order, name, lat, lng, leg_km, leg_hrs, notes`. The Route tab can show **1-hour markers** (1h, 2h, …) along each trip, timed from the router’s driving times (or from `leg_hrs` on the straight-line fallback). Markers only show on trips where a stop has `hour_marks` = `yes`. Set `via` = `yes` on a row to make it a routing-only point (no pin, no leg) that keeps the route on a chosen road. The leg values are the
 distance and time *from the previous stop*. Stops with the same `trip` are routed
 together; each trip is drawn and totalled separately (so nothing tries to drive across
 Bass Strait). Leave `trip` blank for a single trip.
