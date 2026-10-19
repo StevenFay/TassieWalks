@@ -1,12 +1,12 @@
 trip,order,name,lat,lng,leg_km,leg_hrs,notes
 Day drive: Byron Bay → Gumly Gumly,1,Ingenia Holidays Byron Bay,-28.656,153.611,,,"Start – 5-37 Broken Head Rd, Byron Bay (dogs OK on sites and select cabins)"
-Day drive: Byron Bay → Gumly Gumly,2,Coffs Harbour bypass (M1),-30.3,153.098,240,2.6,M1 Pacific Motorway via Ballina and Grafton
-Day drive: Byron Bay → Gumly Gumly,3,Port Macquarie turnoff (M1),-31.457,152.85,150,1.6,M1 via Nambucca Heads and Kempsey
-Day drive: Byron Bay → Gumly Gumly,4,Hexham (M1),-32.83,151.69,245,2.5,M1 via Taree and Bulahdelah
-Day drive: Byron Bay → Gumly Gumly,5,Prestons – M7/M31 junction (Sydney),-33.945,150.865,200,2.3,"M1 via the Central Coast, M2 and M7 around western Sydney to the M31 Hume"
-Day drive: Byron Bay → Gumly Gumly,6,Goulburn (M31),-34.78,149.69,165,1.7,M31 Hume Motorway via the Southern Highlands
-Day drive: Byron Bay → Gumly Gumly,7,"Sturt Hwy turnoff (M31, south of Gundagai)",-35.137,147.957,250,2.5,M31 Hume Hwy via Yass and Gundagai
-Day drive: Byron Bay → Gumly Gumly,8,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,70,0.8,"A20 Sturt Hwy west from the Hume – 3791 Sturt Hwy, Gumly Gumly"
+Day drive: Byron Bay → Gumly Gumly,2,Coffs Harbour bypass (M1),-30.3,153.098,217,2.3,M1 Pacific Motorway via Ballina and Grafton
+Day drive: Byron Bay → Gumly Gumly,3,Port Macquarie turnoff (M1),-31.457,152.85,136,1.4,M1 via Nambucca Heads and Kempsey
+Day drive: Byron Bay → Gumly Gumly,4,Hexham (M1),-32.83,151.69,221,2.3,M1 via Taree and Bulahdelah
+Day drive: Byron Bay → Gumly Gumly,5,Prestons – M7/M31 junction (Sydney),-33.945,150.865,181,2.1,"M1 via the Central Coast, M2 and M7 around western Sydney to the M31 Hume"
+Day drive: Byron Bay → Gumly Gumly,6,Goulburn (M31),-34.78,149.69,149,1.5,M31 Hume Motorway via the Southern Highlands
+Day drive: Byron Bay → Gumly Gumly,7,"Sturt Hwy turnoff (M31, south of Gundagai)",-35.137,147.957,226,2.3,M31 Hume Hwy via Yass and Gundagai
+Day drive: Byron Bay → Gumly Gumly,8,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,63,0.7,"A20 Sturt Hwy west from the Hume – 3791 Sturt Hwy, Gumly Gumly"
 Mainland: Byron Bay → Geelong,1,Byron Bay,-28.6474,153.602,,,Start
 Mainland: Byron Bay → Geelong,2,Coffs Harbour,-30.2963,153.1135,245,2.75,M1 Pacific Motorway south via Ballina and Grafton
 Mainland: Byron Bay → Geelong,3,Port Macquarie,-31.4333,152.9,160,1.9,Pacific Hwy via Nambucca and Kempsey; Port Macquarie is ~10 min off the highway
