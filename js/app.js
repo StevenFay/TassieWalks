@@ -30,7 +30,7 @@
     rawWalks: null, walksFields: null, rawRoute: null, routeFields: null,
     bases: [], amenFilter: new Set(), baseFilter: new Set(), ruleFilter: new Set(), originFilter: new Set(), maxDist: Infinity, q: "",
     me: null, selected: null, engine: null, handles: new Map(),
-    liveLegs: null, showRoute: true,
+    liveLegs: null, showRoute: true, hourMarks: true,
   };
 
   // ───────────────────────── helpers ─────────────────────────
@@ -158,17 +158,18 @@
   ];
   async function roadRoute(stops) {
     const coords = stops.map((s) => `${s.lng.toFixed(5)},${s.lat.toFixed(5)}`).join(";");
-    const cacheKey = "tassiewalks:osrm:" + coords;
+    const cacheKey = "tassiewalks:osrm2:" + coords;
     try { const c = localStorage.getItem(cacheKey); if (c) return JSON.parse(c); } catch (_) {}
     for (const base of OSRM_SERVERS) {
       try {
-        const r = await fetch(`${base}${coords}?overview=full&geometries=geojson&continue_straight=false`);
+        const r = await fetch(`${base}${coords}?overview=full&geometries=geojson&annotations=duration&continue_straight=false`);
         if (!r.ok) throw new Error(r.status);
         const j = await r.json();
         const rt = j.routes?.[0];
         if (j.code !== "Ok" || !rt) throw new Error(j.code || "no route");
         const out = {
-          path: rt.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })),
+          path: rt.geometry.coordinates.map(([lng, lat]) => ({ lat: +lat.toFixed(5), lng: +lng.toFixed(5) })),
+          times: osrmTimes(rt),
           legs: rt.legs.map((l) => ({ km: l.distance / 1000, hrs: l.duration / 3600 })),
           source: "OpenStreetMap",
         };
@@ -179,6 +180,32 @@
     return null;
   }
   let routeSeq = 0;
+
+  // Cumulative driving hours at each point of the OSRM geometry (legs share their joining point)
+  function osrmTimes(rt) {
+    const t = [0]; let acc = 0;
+    rt.legs.forEach((l) => (l.annotation?.duration || []).forEach((d) => { acc += d / 3600; t.push(+acc.toFixed(4)); }));
+    return t.length === rt.geometry.coordinates.length ? t : null;
+  }
+  // Straight-line fallback: spread each CSV leg_hrs evenly along that leg
+  function csvTimes(stops) {
+    let acc = 0;
+    return stops.map((s, i) => (i ? (acc += s.hrs || 0) : 0));
+  }
+  // Points along a path at every whole hour of driving
+  function hourPoints(path, times) {
+    if (!path || !times || path.length !== times.length) return [];
+    const out = []; let h = 1;
+    for (let i = 1; i < path.length; i++) {
+      while (times[i] >= h && times[i] > times[i - 1]) {
+        const f = (h - times[i - 1]) / (times[i] - times[i - 1]);
+        out.push({ h, lat: path[i - 1].lat + f * (path[i].lat - path[i - 1].lat), lng: path[i - 1].lng + f * (path[i].lng - path[i - 1].lng) });
+        h++;
+      }
+    }
+    return out;
+  }
+  function hourTitle(stops, h) { return `${h} h driving from ${stops[0].name}`; }
 
   // ───────────────────────── Google engine ─────────────────────────
   function loadGoogleBootstrap(key) {
@@ -259,6 +286,14 @@
             if (seq !== routeSeq) return undefined; // superseded by a newer draw
             const dr = new DirectionsRenderer({ map, directions: res, suppressMarkers: true, preserveViewport: true, polylineOptions: { strokeColor: "#2f5d50", strokeOpacity: 0.75, strokeWeight: 5 } });
             routeObjs.push({ remove: () => dr.setMap(null) });
+            const gp = [], gt = []; let acc = 0;
+            res.routes[0].legs.forEach((l) => l.steps.forEach((st) => {
+              const pts = st.path || [], hrs = st.duration.value / 3600;
+              let len = 0; const seg = pts.map((p, k) => (k ? (len += google.maps.geometry ? google.maps.geometry.spherical.computeDistanceBetween(pts[k - 1], p) : haversineKm({ lat: pts[k - 1].lat(), lng: pts[k - 1].lng() }, { lat: p.lat(), lng: p.lng() })) : 0));
+              pts.forEach((p, k) => { gp.push({ lat: p.lat(), lng: p.lng() }); gt.push(acc + (len ? (seg[k] / len) * hrs : 0)); });
+              acc += hrs;
+            }));
+            this.hourMarks(stops, gp, gt);
             return { legs: res.routes[0].legs.map((l) => ({ km: l.distance.value / 1000, hrs: l.duration.value / 3600 })), source: "Google" };
           } catch (e) {
             console.warn("Google Directions unavailable, trying OpenStreetMap routing:", e);
@@ -269,6 +304,7 @@
         if (rr) {
           const road = new Polyline({ map, path: rr.path, strokeColor: "#2f5d50", strokeOpacity: 0.75, strokeWeight: 5 });
           routeObjs.push({ remove: () => road.setMap(null) });
+          this.hourMarks(stops, rr.path, rr.times);
           return rr;
         }
         const line = new Polyline({
@@ -276,7 +312,15 @@
           icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 0.8, strokeColor: "#2f5d50", scale: 3 }, offset: "0", repeat: "14px" }],
         });
         routeObjs.push({ remove: () => line.setMap(null) });
+        this.hourMarks(stops, stops, csvTimes(stops));
         return null;
+      },
+      hourMarks(stops, path, times) {
+        if (!state.hourMarks) return;
+        hourPoints(path, times).forEach((p) => {
+          const m = new AdvancedMarkerElement({ map, position: p, title: hourTitle(stops, p.h), content: divEl("hour-mark", `${p.h}h`), zIndex: 4 });
+          routeObjs.push({ remove: () => (m.map = null) });
+        });
       },
       clearRoute() { routeObjs.forEach((o) => o.remove()); routeObjs = []; },
       setMe(p) {
@@ -341,10 +385,19 @@
         if (seq !== routeSeq) return undefined; // superseded by a newer draw
         if (rr) {
           L.polyline(rr.path.map((p) => [p.lat, p.lng]), { color: "#2f5d50", weight: 5, opacity: 0.75 }).addTo(routeLayer);
+          this.hourMarks(stops, rr.path, rr.times);
           return rr;
         }
         L.polyline(stops.map((s) => [s.lat, s.lng]), { color: "#2f5d50", weight: 3, opacity: 0.8, dashArray: "6 8" }).addTo(routeLayer);
+        this.hourMarks(stops, stops, csvTimes(stops));
         return null;
+      },
+      hourMarks(stops, path, times) {
+        if (!state.hourMarks) return;
+        hourPoints(path, times).forEach((p) => {
+          L.marker([p.lat, p.lng], { icon: L.divIcon({ className: "", html: `<div class="hour-mark">${p.h}h</div>`, iconSize: [30, 18], iconAnchor: [15, 9] }), zIndexOffset: -200 })
+            .bindTooltip(hourTitle(stops, p.h), { direction: "top", offset: [0, -8] }).addTo(routeLayer);
+        });
       },
       clearRoute() { routeLayer.clearLayers(); },
       setMe(p) {
@@ -488,10 +541,12 @@
     const src = results.find((r) => r)?.source;
     $("#routeInfo").innerHTML = `<div class="route-box">
       ${state.trips.filter((t) => t.stops.length >= 2).map((t) => tripTable(t, results[state.trips.indexOf(t)])).join("")}
-      <div class="btn-row"><label class="btn ghost"><input type="checkbox" id="showRoute" ${state.showRoute ? "checked" : ""}> Show route</label></div>
+      <div class="btn-row"><label class="btn ghost"><input type="checkbox" id="showRoute" ${state.showRoute ? "checked" : ""}> Show route</label>
+        <label class="btn ghost"><input type="checkbox" id="hourMarks" ${state.hourMarks ? "checked" : ""}> 1-hour markers</label></div>
       <p class="hint">${src ? `The solid lines and “Road” columns follow real roads, routed by ${esc(src)}. The router picks its own fastest way, which may differ from the plan (e.g. sealed highway vs the Western Explorer).` : "Couldn't reach a routing service, so dashed lines join the stops directly. Distances come from route.csv."}${state.trips.length > 1 ? " Each trip is routed separately (no driving across Bass Strait – take the Spirit of Tasmania from Geelong to Devonport)." : ""}</p>
     </div>`;
     $("#showRoute").addEventListener("change", (e) => { state.showRoute = e.target.checked; drawRoute(); });
+    $("#hourMarks").addEventListener("change", (e) => { state.hourMarks = e.target.checked; drawRoute(); });
   }
 
   async function drawRoute() {

@@ -126,3 +126,4 @@ h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
 .meta .amen { letter-spacing: 2px; }
 .trip-head { font-size: 14px; margin: 14px 0 0; }
 .trip-head:first-child { margin-top: 0; }
+.hour-mark { display: inline-block; min-width: 30px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #2f5d50; border: 2px solid #2f5d50; font: 700 11px/14px system-ui, Arial, sans-serif; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.3); white-space: nowrap; }

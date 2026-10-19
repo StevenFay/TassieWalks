@@ -1,4 +1,12 @@
 trip,order,name,lat,lng,leg_km,leg_hrs,notes
+Day drive: Byron Bay → Gumly Gumly,1,Ingenia Holidays Byron Bay,-28.656,153.611,,,"Start – 5-37 Broken Head Rd, Byron Bay (dogs OK on sites and select cabins)"
+Day drive: Byron Bay → Gumly Gumly,2,Tenterfield,-29.049,152.019,215,2.7,Bruxner Hwy via Casino and Tabulam, over the Great Dividing Range
+Day drive: Byron Bay → Gumly Gumly,3,Tamworth,-31.09,150.929,270,3.0,"New England Hwy via Glen Innes, Armidale and Uralla"
+Day drive: Byron Bay → Gumly Gumly,4,Coonabarabran,-31.273,149.278,175,2.0,Oxley Hwy via Gunnedah and Mullaley
+Day drive: Byron Bay → Gumly Gumly,5,Dubbo,-32.243,148.604,160,1.7,Newell Hwy via Gilgandra
+Day drive: Byron Bay → Gumly Gumly,6,Forbes,-33.385,148.008,155,1.7,Newell Hwy via Peak Hill and Parkes
+Day drive: Byron Bay → Gumly Gumly,7,West Wyalong,-33.924,147.205,105,1.1,Newell Hwy
+Day drive: Byron Bay → Gumly Gumly,8,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,170,1.9,"Mid Western Hwy / Burley Griffin Way via Temora, then Olympic Hwy to Wagga – 3791 Sturt Hwy, Gumly Gumly"
 Mainland: Byron Bay → Geelong,1,Byron Bay,-28.6474,153.602,,,Start
 Mainland: Byron Bay → Geelong,2,Coffs Harbour,-30.2963,153.1135,245,2.75,M1 Pacific Motorway south via Ballina and Grafton
 Mainland: Byron Bay → Geelong,3,Port Macquarie,-31.4333,152.9,160,1.9,Pacific Hwy via Nambucca and Kempsey; Port Macquarie is ~10 min off the highway
