@@ -137,10 +137,15 @@
         name: (r.name || "").trim(),
         lat: num(r.lat ?? r.latitude), lng: num(r.lng ?? r.lon ?? r.longitude),
         km: num(r.leg_km), hrs: num(r.leg_hrs), notes: r.notes || "",
+        trip: (r.trip || "").trim() || "Trip",
       }))
-      .filter((s) => s.name && s.lat != null && s.lng != null)
-      .sort((a, b) => a.order - b.order);
-    state.route = stops;
+      .filter((s) => s.name && s.lat != null && s.lng != null);
+    // Group stops into separate trips (e.g. mainland drive + Tasmania), each drawn as its own route
+    const trips = [];
+    stops.forEach((s) => { let t = trips.find((x) => x.name === s.trip); if (!t) trips.push((t = { name: s.trip, stops: [] })); t.stops.push(s); });
+    trips.forEach((t) => { t.stops.sort((a, b) => a.order - b.order); t.stops.forEach((s, i) => { s.idx = i; s.prev = t.stops[i - 1]; }); });
+    state.trips = trips;
+    state.route = trips.flatMap((t) => t.stops);
     state.rawRoute = rows; state.routeFields = fields;
   }
 
@@ -225,10 +230,19 @@
         points.forEach((p) => b.extend(p));
         map.fitBounds(b, 40);
       },
-      async drawRoute(stops) {
+      async drawRoute(trips) {
         this.clearRoute();
-        if (stops.length < 2) return null;
         const seq = ++routeSeq;
+        const out = [];
+        for (const t of trips) {
+          const r = await this.drawTrip(t.stops, seq);
+          if (r === undefined || seq !== routeSeq) return undefined;
+          out.push(r);
+        }
+        return out;
+      },
+      async drawTrip(stops, seq) {
+        if (stops.length < 2) return null;
         stops.forEach((s, i) => {
           const m = new AdvancedMarkerElement({ map, position: { lat: s.lat, lng: s.lng }, title: s.name, content: divEl("stop-pin", String(i + 1)), zIndex: 5 });
           m.addListener("click", () => { iw.setContent(stopHtml(s, i)); iw.setPosition({ lat: s.lat, lng: s.lng }); iw.setOptions({ pixelOffset: new google.maps.Size(0, -14) }); iw.open({ map }); });
@@ -306,10 +320,19 @@
         if (points.length === 1) { map.setView([points[0].lat, points[0].lng], 12); return; }
         map.fitBounds(L.latLngBounds(points.map((p) => [p.lat, p.lng])), { padding: [40, 40] });
       },
-      async drawRoute(stops) {
+      async drawRoute(trips) {
         routeLayer.clearLayers();
-        if (stops.length < 2) return null;
         const seq = ++routeSeq;
+        const out = [];
+        for (const t of trips) {
+          const r = await this.drawTrip(t.stops, seq);
+          if (r === undefined || seq !== routeSeq) return undefined;
+          out.push(r);
+        }
+        return out;
+      },
+      async drawTrip(stops, seq) {
+        if (stops.length < 2) return null;
         stops.forEach((s, i) => {
           L.marker([s.lat, s.lng], { icon: L.divIcon({ className: "", html: `<div class="stop-pin">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] }), zIndexOffset: -100 })
             .bindPopup(stopHtml(s, i)).addTo(routeLayer);
@@ -360,7 +383,8 @@
 
   function stopHtml(s, i) {
     return `<div class="iw"><h3>${i + 1}. ${esc(s.name)}</h3>
-      ${i > 0 ? `<p>Leg from ${esc(state.route[i - 1]?.name)}: <b>${fmtKm(s.km)}</b>, ${fmtHrs(s.hrs)}</p>` : ""}
+      ${state.trips.length > 1 ? `<span class="tag plain">${esc(s.trip)}</span>` : ""}
+      ${s.prev ? `<p>Leg from ${esc(s.prev.name)}: <b>${fmtKm(s.km)}</b>, ${fmtHrs(s.hrs)}</p>` : ""}
       ${s.notes ? `<p>${esc(s.notes)}</p>` : ""}
       <div class="links"><a href="${gmapsPlace(s.lat, s.lng)}" target="_blank" rel="noopener">Google Maps ↗</a></div></div>`;
   }
@@ -433,11 +457,10 @@
     return vis;
   }
 
-  function renderRoute() {
-    const s = state.route;
-    if (s.length < 2) { $("#routeInfo").innerHTML = `<div class="route-box"><p class="hint">Add at least two stops to data/route.csv.</p></div>`; return; }
-    const liveSrc = state.liveLegs?.source;
-    const live = state.liveLegs?.legs;
+  function tripTable(t, res) {
+    const s = t.stops;
+    const liveSrc = res?.source;
+    const live = res?.legs;
     let totKm = 0, totHrs = 0, totLive = 0, totLiveH = 0;
     const rows = s.slice(1).map((stop, i) => {
       totKm += stop.km || 0; totHrs += stop.hrs || 0;
@@ -449,17 +472,24 @@
     const pts = s.map((x) => `${x.lat},${x.lng}`);
     const tripUrl = `https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${pts[0]}&destination=${pts[pts.length - 1]}` +
       (pts.length > 2 ? `&waypoints=${encodeURIComponent(pts.slice(1, -1).join("|"))}` : "");
-    $("#routeInfo").innerHTML = `<div class="route-box">
+    return `${state.trips.length > 1 ? `<h3 class="trip-head">${esc(t.name)}</h3>` : ""}
       <table class="legs">
         <thead><tr><th>Leg</th><th class="num">Plan (CSV)</th>${live ? `<th class="num">Road (${esc(liveSrc)})</th>` : ""}</tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr><td>Total</td><td class="num">${fmtKm(totKm)}<div class="note">${fmtHrs(totHrs)}</div></td>${live ? `<td class="num live">${fmtKm(totLive)}<div class="note">${fmtHrs(totLiveH)}</div></td>` : ""}</tr></tfoot>
       </table>
-      <div class="btn-row">
-        <a class="btn" href="${tripUrl}" target="_blank" rel="noopener">Open whole trip in Google Maps ↗</a>
-        <label class="btn ghost"><input type="checkbox" id="showRoute" ${state.showRoute ? "checked" : ""}> Show route</label>
-      </div>
-      <p class="hint">${live ? `The solid line and “Road” column follow real roads, routed by ${esc(liveSrc)}. The router picks its own fastest way, which may differ from the plan (e.g. sealed highway vs the Western Explorer).` : "Couldn't reach a routing service, so the dashed line joins the stops directly. Distances come from route.csv."}</p>
+      <div class="btn-row"><a class="btn" href="${tripUrl}" target="_blank" rel="noopener">Open ${state.trips.length > 1 ? "this trip" : "whole trip"} in Google Maps ↗</a></div>`;
+  }
+
+  function renderRoute() {
+    const trips = (state.trips || []).filter((t) => t.stops.length >= 2);
+    if (!trips.length) { $("#routeInfo").innerHTML = `<div class="route-box"><p class="hint">Add at least two stops to data/route.csv.</p></div>`; return; }
+    const results = state.liveLegs || [];
+    const src = results.find((r) => r)?.source;
+    $("#routeInfo").innerHTML = `<div class="route-box">
+      ${state.trips.filter((t) => t.stops.length >= 2).map((t) => tripTable(t, results[state.trips.indexOf(t)])).join("")}
+      <div class="btn-row"><label class="btn ghost"><input type="checkbox" id="showRoute" ${state.showRoute ? "checked" : ""}> Show route</label></div>
+      <p class="hint">${src ? `The solid lines and “Road” columns follow real roads, routed by ${esc(src)}. The router picks its own fastest way, which may differ from the plan (e.g. sealed highway vs the Western Explorer).` : "Couldn't reach a routing service, so dashed lines join the stops directly. Distances come from route.csv."}${state.trips.length > 1 ? " Each trip is routed separately (no driving across Bass Strait – take the Spirit of Tasmania from Geelong to Devonport)." : ""}</p>
     </div>`;
     $("#showRoute").addEventListener("change", (e) => { state.showRoute = e.target.checked; drawRoute(); });
   }
@@ -467,7 +497,7 @@
   async function drawRoute() {
     const eng = state.engine;
     if (!state.showRoute) { routeSeq++; eng.clearRoute(); state.liveLegs = null; renderRoute(); return; }
-    const res = await eng.drawRoute(state.route);
+    const res = await eng.drawRoute(state.trips || []);
     if (eng !== state.engine) return;
     if (res === undefined) return; // a newer draw is in progress
     state.liveLegs = res;

@@ -1,7 +1,9 @@
 # 🐾 TassieWalks
 
-A map of dog-friendly walks for a Tasmanian road trip:
-**Devonport → Scottsdale → Beaumaris → Arthur River → Strahan**.
+A map of dog-friendly walks for a road trip in two parts:
+
+1. **Mainland: Byron Bay → Geelong** – down the coast on the Pacific Highway / M1 to Sydney, then inland on the Hume to Melbourne and Geelong (Spirit of Tasmania). Off-lead beaches, dog parks and short walks **under 30 minutes off the highway**.
+2. **Tasmania: Devonport → Scottsdale → Beaumaris → Arthur River → Strahan**.
 
 Everything on the map comes from two CSV files you can edit. The map uses
 **Google Maps** when you add an API key. Without a key it uses
@@ -64,8 +66,10 @@ that AllTrails tags as dog-friendly. They have `origin = alltrails`. Use the
 
 ### `data/route.csv`
 
-`order, name, lat, lng, leg_km, leg_hrs, notes`. The leg values are the
-distance and time *from the previous stop*.
+`trip, order, name, lat, lng, leg_km, leg_hrs, notes`. The leg values are the
+distance and time *from the previous stop*. Stops with the same `trip` are routed
+together; each trip is drawn and totalled separately (so nothing tries to drive across
+Bass Strait). Leave `trip` blank for a single trip.
 
 You can edit either file in Excel, Numbers, Google Sheets or directly on
 GitHub. Commit the change and the site updates.
@@ -133,6 +137,7 @@ Libraries come from cdnjs: [PapaParse](https://www.papaparse.com/) and
 ## ⚠️ Caveats
 
 - Coordinates are approximate, so check trailheads before you drive to them.
-- Dogs are **not allowed in Tasmanian National Parks or State Reserves**.
+- Dogs are **not allowed in Tasmanian National Parks or State Reserves**, or in NSW / Victorian national parks and nature reserves (e.g. Cape Byron, Arakwal).
+- Mainland stops were researched mainly from [Travelnuity's Pacific Highway](https://www.travelnuity.com/driving-pacific-highway-with-a-dog/) and [Hume Highway](https://www.travelnuity.com/driving-hume-highway-with-a-dog/) guides. `detour_km` is the approximate return detour off the highway.
   Beach rules change with the seasons (shorebird nesting), so always follow the signs on the day.
 - Distances in the plan are estimates. Check them with the live Google figures or Google Maps.
