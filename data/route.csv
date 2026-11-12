@@ -1,8 +1,4 @@
 trip,order,name,lat,lng,leg_km,leg_hrs,notes,via,hour_marks
-Day 1: Broken Head → Gumly Gumly,1,Ingenia Holidays Byron Bay,-28.656,153.611,,,"Start – 5-37 Broken Head Rd, Byron Bay",,yes
-Day 1: Broken Head → Gumly Gumly,2,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,1193,,"Overnight – 3791 Sturt Hwy, Gumly Gumly. M1 Pacific Motorway to Sydney, then M31 Hume and A20 Sturt Hwy",,
-Day 2: Gumly Gumly → Geelong,1,Australian Homestead Motor Lodge (Gumly Gumly),-35.1235,147.4265,,,Start,,
-Day 2: Gumly Gumly → Geelong,2,Geelong (Spirit of Tasmania terminal),-38.107,144.372,,,Spirit of Tasmania to Devonport,,
 Tasmania,1,Devonport,-41.1786,146.3634,,,Start – Spirit of Tasmania terminal,,
 Tasmania,2,Scottsdale,-41.159,147.514,159,2.0,"Bass Hwy to Launceston, Tasman Hwy (A3)",,
 Tasmania,3,Beaumaris,-41.421,148.282,110,1.75,"Tasman Hwy via Derby, Weldborough Pass, St Helens",,

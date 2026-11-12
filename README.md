@@ -1,9 +1,6 @@
 # 🐾 TassieWalks
 
-A map of dog-friendly walks for a road trip in two parts:
-
-1. **Mainland: Byron Bay → Geelong** – down the coast on the Pacific Highway / M1 to Sydney, then inland on the Hume to Melbourne and Geelong (Spirit of Tasmania). Off-lead beaches, dog parks and short walks **under 30 minutes off the highway**.
-2. **Tasmania: Devonport → Scottsdale → Beaumaris → Arthur River → Strahan**.
+A map of dog-friendly walks for a Tasmanian road trip: **Devonport → Scottsdale → Beaumaris → Arthur River → Strahan**.
 
 Everything on the map comes from two CSV files you can edit. The map uses
 **Google Maps** when you add an API key. Without a key it uses
@@ -26,7 +23,7 @@ Everything on the map comes from two CSV files you can edit. The map uses
 | 🟢 | Off lead | Council-declared off-lead beaches and areas |
 | 🟣 | Dog park | Fenced or designated dog parks |
 | 🔵 | On lead | Walks where dogs are allowed on a lead |
-| 🔥 | Campground (fires) | Dog-friendly campgrounds that allow campfires, near each overnight stop (Broken Head, Gumly Gumly, Devonport, Scottsdale, Beaumaris, Arthur River, Strahan) |
+| 🔥 | Campground (fires) | Dog-friendly campgrounds that allow campfires, near each overnight stop (Devonport, Scottsdale, Beaumaris, Arthur River, Strahan) |
 | 🔷 | Lake | Dog-friendly lakes, with camping / fires / fishing / dog-swim info and filter chips |
 | 🟤 | Historic pub | Notable or historic pubs – dogs usually only in outdoor areas |
 | 🟠 | Check signage | Conflicting or unconfirmed dog rules |
@@ -138,7 +135,6 @@ Libraries come from cdnjs: [PapaParse](https://www.papaparse.com/) and
 ## ⚠️ Caveats
 
 - Coordinates are approximate, so check trailheads before you drive to them.
-- Dogs are **not allowed in Tasmanian National Parks or State Reserves**, or in NSW / Victorian national parks and nature reserves (e.g. Cape Byron, Arakwal).
-- Mainland stops were researched mainly from [Travelnuity's Pacific Highway](https://www.travelnuity.com/driving-pacific-highway-with-a-dog/) and [Hume Highway](https://www.travelnuity.com/driving-hume-highway-with-a-dog/) guides. `detour_km` is the approximate return detour off the highway.
-  Beach rules change with the seasons (shorebird nesting), so always follow the signs on the day.
+- Dogs are **not allowed in Tasmanian National Parks or State Reserves**.
+- Beach rules change with the seasons (shorebird nesting), so always follow the signs on the day.
 - Distances in the plan are estimates. Check them with the live Google figures or Google Maps.
