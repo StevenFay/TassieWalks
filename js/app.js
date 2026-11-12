@@ -19,6 +19,7 @@
     "Dog park": { color: "#7b4fb3", glyph: "P", label: "Dog park" },
     "Pub": { color: "#9a5b13", glyph: "🍺", label: "Historic pub" },
     "Lake": { color: "#12869c", glyph: "≈", label: "Lake" },
+    "Camp": { color: "#b8452a", glyph: "🔥", label: "Campground (fires)" },
     "On lead":  { color: "#2f6fb5", glyph: "L", label: "On lead" },
     "Check":    { color: "#d0891a", glyph: "?", label: "Check signage" },
     "No dogs":  { color: "#c0392b", glyph: "✕", label: "No dogs" },
@@ -53,6 +54,7 @@
     const s = String(r || "").toLowerCase();
     if (/no\s*dog|prohibit|not allowed|banned/.test(s)) return "No dogs";
     if (/dog\s*park|fenced/.test(s)) return "Dog park";
+    if (/camp/.test(s)) return "Camp";
     if (/\bpub\b|hotel|tavern|inn\b/.test(s)) return "Pub";
     if (/lake|lagoon/.test(s)) return "Lake";
     if (/off/.test(s)) return "Off lead";
@@ -436,7 +438,7 @@
       <div class="links">
         <a href="${gmapsDir(w.lat, w.lng)}" target="_blank" rel="noopener">Directions ↗</a>
         <a href="${gmapsPlace(w.lat, w.lng)}" target="_blank" rel="noopener">Google Maps ↗</a>
-        ${w.alltrails || !["Dog park", "Pub", "Lake"].includes(w.rule) ? `<a href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}
+        ${w.alltrails || !["Dog park", "Pub", "Lake", "Camp"].includes(w.rule) ? `<a href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}
         ${w.source ? `<a href="${esc(w.source)}" target="_blank" rel="noopener">Source ↗</a>` : ""}
       </div>
     </div>`;
@@ -504,7 +506,7 @@
       return `<li class="item${state.selected === w.id ? " sel" : ""}" data-id="${esc(w.id)}" tabindex="0">
         <span class="dot" style="background:${r.color}" title="${esc(r.label)}"></span>
         <div><h3>${esc(w.name)}</h3><div class="meta">${amen ? `<span class="amen">${amen}</span>` : ""}${bits.map((b) => `<span>${esc(b)}</span>`).join("")}</div>
-        ${w.alltrails || !["Dog park", "Pub", "Lake"].includes(w.rule) ? `<a class="at-link" href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}</div></li>`;
+        ${w.alltrails || !["Dog park", "Pub", "Lake", "Camp"].includes(w.rule) ? `<a class="at-link" href="${esc(allTrailsUrl(w))}" target="_blank" rel="noopener">${w.alltrails ? "AllTrails ↗" : "Find on AllTrails ↗"}</a>` : ""}</div></li>`;
     };
 
     if (state.me) {
